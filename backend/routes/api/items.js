@@ -9,4 +9,10 @@ router.get('/', (request, result) => {
         .catch(err => result.status(404).json({ noitemsfound: 'No Items found' }));
 });
 
+router.post('/', (request, result) => {
+    Item.create(request.body)
+        .then(item => result.json({message: 'Item added successfully'}))
+        .catch(error => result.status(400).json({ error: 'Unable to add this item' }));
+});
+
 module.exports = router;
