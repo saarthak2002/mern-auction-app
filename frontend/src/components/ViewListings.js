@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import ListingCard from './ListingCard';
 
 const ViewListings = (props) => {
+
+    const { state } = useLocation();
+    console.log(state);
 
     const [listings, setListings] = useState([]);
 
@@ -30,13 +33,12 @@ const ViewListings = (props) => {
 
     return(
         <div className="container">
-            <div class="row d-flex justify-content-center">
+            <div className="row d-flex justify-content-center">
                 
                     <h1 className='col-md-4'>Listings</h1>
-                    <button type="button" className='col-md-4 offset-md-4 btn btn-primary'>
-                        <Link to='/create-listing'>Create Listing</Link>
-                        Create Listing
-                    </button>
+                    
+                        <Link to='/create-listing' className='col-md-4 offset-md-4 btn btn-primary'>Create Listing</Link>
+                        {state ?  <p> {state.firstName }</p> : <p>Not logged in</p>}
                 
                 <div className="row">
                     {listingList}

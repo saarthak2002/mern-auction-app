@@ -20,6 +20,9 @@ const ItemSchema = new mongoose.Schema({
     sold:{
         type: Boolean,
         required: true
+    },
+    image: {
+        type: String
     }
 });
 
