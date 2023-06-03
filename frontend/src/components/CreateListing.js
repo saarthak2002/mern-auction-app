@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -13,8 +13,22 @@ const CreateListing = (props) => {
         price: 0,
         startingBid: 0,
         sold: false,
-        image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d'
+        image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d',
+        seller:''
     });
+
+    const [user, setUser] = useState();
+    const [sellerName, setSellerName] = useState('')
+
+    useEffect(() => {
+        const loggedInUser = localStorage.getItem("user");
+        if (loggedInUser) {
+            const u = JSON.parse(loggedInUser);
+            setUser(u);
+            setSellerName(u.firstName+' '+u.lastName);
+        }
+      }, []);
+
 
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileUrl, setFileUrl] = useState('');
@@ -26,6 +40,8 @@ const CreateListing = (props) => {
     const onSubmit = (event) => {
         event.preventDefault();
         if(validateForm()) {
+            listing.seller = user._id;
+            console.log(listing);
             axios
             .post('http://localhost:8082/api/items', listing)
             .then( result => {
@@ -35,7 +51,8 @@ const CreateListing = (props) => {
                     price: 0,
                     startingBid: 0,
                     sold: false,
-                    image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d'
+                    image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d',
+                    seller:''
                 });
                 navigate('/');
             })
@@ -100,6 +117,7 @@ const CreateListing = (props) => {
     }
 
     console.log(process.env.REACT_APP_CLOUDINARY_API_SECRET)
+    console.log(user);
     
     return (
         <div className="container">
@@ -115,7 +133,15 @@ const CreateListing = (props) => {
                         value={listing.title}
                         onChange={onChange}
                     />
-                    <div id="titleHelp" className="form-text">A descriptive title will attract potential bidders</div>
+                    <div id="titleHelp" className="form-text text-muted">A descriptive title will attract potential bidders</div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label">Seller</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" value={sellerName}/>
+                        </div>
+                    </div>
+
                     <label>Description</label>
                     <textarea 
                         className="form-control"

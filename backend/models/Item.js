@@ -23,6 +23,10 @@ const ItemSchema = new mongoose.Schema({
     },
     image: {
         type: String
+    },
+    seller: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
     }
 });
 

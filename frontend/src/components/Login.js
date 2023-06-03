@@ -43,8 +43,8 @@ const Login = (props) => {
                     password:'',
                 })
                 setError('');
-                console.log(result.data);
-                navigate('/', {state: result.data.user})
+                localStorage.setItem('user', JSON.stringify(result.data.user));
+                navigate('/');
             })
             .catch(error => {
                 if(error.response && error.response.status === 400) {

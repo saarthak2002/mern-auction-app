@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import NavBar from './NavBar';
 
 import ListingCard from './ListingCard';
 
 const ViewListings = (props) => {
 
-    const { state } = useLocation();
-    console.log(state);
+    const [user, setUser] = useState();
 
+    useEffect(() => {
+        const loggedInUser = localStorage.getItem("user");
+        if (loggedInUser) {
+            setUser(JSON.parse(loggedInUser));
+        }
+    }, []);
+
+    const isLoggedIn = user ? true : false;
     const [listings, setListings] = useState([]);
 
     useEffect(() => {
@@ -23,28 +30,23 @@ const ViewListings = (props) => {
         });
     }, []);
 
-    console.log('hi')
-    console.log(listings);
-
     const listingList = 
         listings.length === 0 
         ? 'There are no listings yet!'
         : listings.map((listing, k) => <ListingCard listing={listing} key={k} />);
 
     return(
-        <div className="container">
+        <div>
+            <NavBar isLoggedIn={isLoggedIn} user={user}/>
             <div className="row d-flex justify-content-center">
-                
-                    <h1 className='col-md-4'>Listings</h1>
-                    
-                        <Link to='/create-listing' className='col-md-4 offset-md-4 btn btn-primary'>Create Listing</Link>
-                        {state ?  <p> {state.firstName }</p> : <p>Not logged in</p>}
-                
-                <div className="row">
-                    {listingList}
+                <div className='container justify-content-center'>
+                    <h1 className='' style={{textAlign:'center'}}>Listings</h1>
+                    <div className="row justify-content-center">
+                        {listingList}
+                    </div>
                 </div>
             </div>
-    </div>
+        </div>
     )
     
 }

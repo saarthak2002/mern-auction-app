@@ -9,6 +9,12 @@ router.get('/', (request, result) => {
         .catch(err => result.status(404).json({ noitemsfound: 'No Items found' }));
 });
 
+router.get('/:id', (request, result) => {
+    User.findById(request.params.id)
+        .then(users => result.json(users))
+        .catch(err => result.status(404).json({ noitemsfound: 'No Items found' }));
+});
+
 router.post('/', (request, result) => {
 
     email = request.body.email;
