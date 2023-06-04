@@ -13,7 +13,7 @@ const CreateListing = (props) => {
         price: 0,
         startingBid: 0,
         sold: false,
-        image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d',
+        image: [],
         seller:'',
         auctionEndDate: ''
     });
@@ -38,8 +38,8 @@ const CreateListing = (props) => {
       }, []);
 
 
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [fileUrl, setFileUrl] = useState('');
+    const [selectedFiles, setSelectedFiles] = useState(null);
+    const [fileUrls, setFileUrls] = useState([]);
     const[uploadProgress, setUploadProgress] = useState(0);
 
     const onChange = (event) => {
@@ -66,7 +66,7 @@ const CreateListing = (props) => {
                     price: 0,
                     startingBid: 0,
                     sold: false,
-                    image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d',
+                    image: [],
                     seller:'',
                     auctionEndDate: ''
                 });
@@ -99,50 +99,63 @@ const CreateListing = (props) => {
     }
 
     const handleFileChange = (event) => {
-        setSelectedFile(event.target.files[0]);
+        console.log(event.target.files);
+        setSelectedFiles(event.target.files);
     }
 
     const handleUpload = async (event) => {
         event.preventDefault();
-        if(selectedFile) {
+        if(selectedFiles) {
             const cloudName = 'dgju1tzno';
             const apiKey = process.env.REACT_APP_CLOUDINARY_API_SECRET;
             const uploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            formData.append('upload_preset', uploadPreset);
-            const config = {
-                onUploadProgress: (event) => {
-                    const progress = Math.round(event.loaded * 100 / event.total);
-                    setUploadProgress(progress);
+            
+            console.log('sf');
+            console.log(selectedFiles);
+            // for(let i=0;i<selectedFiles.length;i++){
+            //     formData.append('files', selectedFiles[i]);
+            // }
+            // formData.append('upload_preset', uploadPreset);
+
+            for(let i=0;i<selectedFiles.length;i++){
+                const formData = new FormData();
+                const config = {
+                    onUploadProgress: (event) => {
+                        const progress = Math.round(event.loaded * 100 / event.total);
+                        setUploadProgress(progress);
+                    }
                 }
+                formData.append('file', selectedFiles[i]);
+                formData.append('upload_preset', uploadPreset);
+                
+                await axios
+                    .post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData, config)
+                    .then((response) => {
+                        const uploadedUrl = response.data.secure_url;
+                        listing.image.push(uploadedUrl);
+                        console.log(listing);
+                    })
+                    .catch((error) => {
+                        console.log('There was an error uploading the file');
+                    })
             }
-            axios
-                .post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData, config)
-                .then((response) => {
-                    setFileUrl(response.data.secure_url);
-                    listing.image = response.data.secure_url;
-                })
-                .catch((error) => {
-                    console.log('There was an error uploading the file');
-                })
         }
     };
 
-    const handleRemoveImage = async (event) => {
-        event.preventDefault();
-        if(fileUrl) {
-            console.log('fileUrl delete here');
-            axios.delete(fileUrl)
-                .then((response) => {
-                    fileUrl = '';
-                })
-                .catch((error) => {
-                    console.log('There was an error deleting the file');
-                })
-        }
-    }
+    // const handleRemoveImage = async (event) => {
+    //     event.preventDefault();
+    //     if(fileUrl) {
+    //         console.log('fileUrl delete here');
+    //         axios.delete(fileUrl)
+    //             .then((response) => {
+    //                 fileUrl = '';
+    //             })
+    //             .catch((error) => {
+    //                 console.log('There was an error deleting the file');
+    //             })
+    //     }
+    // }
 
     console.log(uploadProgress);
 
@@ -223,22 +236,25 @@ const CreateListing = (props) => {
                         <input
                             type='file'
                             onChange={handleFileChange}
+                            multiple
                         />
                         <button onClick={handleUpload} style={{marginRight:'1%'}}>Upload</button>
                         {uploadProgress != 0 && <p>Upload Progress: {uploadProgress}%</p>}
                     </div>
-                    {fileUrl && (
-                        <div>
-                            {/* <p>File URL:</p>
-                            <Image cloudName="YOUR_CLOUD_NAME" publicId={fileUrl} /> */}
-                            <div className="card" style={{width: '18rem',margin:'1%'}}>
-                                <img className="card-img-top"  src={fileUrl} alt="" />
+                    {listing.image.length > 0 && (
+                        <div className='row'>
+                            {listing.image.map((url, index) => (
+                            <div key={index} className="card" style={{ width: '18rem', margin: '1%' }}>
+                                <img className="card-img-top" src={url} alt="" />
                                 <div className="card-body">
-                                    <button className='btn-warning' onClick={handleRemoveImage}>Remove</button>
-                                </div>
-                             </div>
+                                <button className="btn-warning">
+                                    Remove
+                                </button>
+                            </div>
                         </div>
-                    )}
+                    ))}
+                </div>
+                )}
                 </div>
                 <button 
                     type="submit"
