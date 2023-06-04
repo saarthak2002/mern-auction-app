@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {Link} from 'react-router-dom';
 
 const ListingCard = (props) => {
     const listing = props.listing;
@@ -52,7 +53,8 @@ const ListingCard = (props) => {
                         </h3>
                     </div>
                 </div>
-                <p className="card-text">{listing.description}</p>
+                <p className="card-text">{listing.description.slice(0, 150) + "..."}</p>
+                <Link to={'/listing/' + listing._id}>View</Link>
             </div>
         </div>
     )

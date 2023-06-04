@@ -9,6 +9,12 @@ router.get('/', (request, result) => {
         .catch(err => result.status(404).json({ noitemsfound: 'No Items found' }));
 });
 
+router.get('/:id', (request, result) => {
+    Item.findById(request.params.id)
+        .then(item => result.json(item))
+        .catch(err => result.status(404).json({ noitemsfound: 'No Items found' }));
+})
+
 router.post('/', (request, result) => {
     Item.create(request.body)
         .then(item => result.json({message: 'Item added successfully'}))
