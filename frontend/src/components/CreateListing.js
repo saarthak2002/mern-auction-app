@@ -14,11 +14,19 @@ const CreateListing = (props) => {
         startingBid: 0,
         sold: false,
         image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d',
-        seller:''
+        seller:'',
+        auctionEndDate: ''
     });
 
     const [user, setUser] = useState();
-    const [sellerName, setSellerName] = useState('')
+    const [sellerName, setSellerName] = useState('');
+
+    const [endDate, setEndDate] = useState();
+    const [endTime, setEndTime] = useState();
+
+    const[titleError, setTitleError] = useState('');
+    const[timeError, setTimeError] = useState('');
+    const[descriptionError, setDescriptionError] = useState('');
 
     useEffect(() => {
         const loggedInUser = localStorage.getItem("user");
@@ -32,6 +40,7 @@ const CreateListing = (props) => {
 
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileUrl, setFileUrl] = useState('');
+    const[uploadProgress, setUploadProgress] = useState(0);
 
     const onChange = (event) => {
         setListing({...listing, [event.target.name]: event.target.value });
@@ -39,9 +48,15 @@ const CreateListing = (props) => {
 
     const onSubmit = (event) => {
         event.preventDefault();
+        setTitleError('');
+        setTimeError('');
+        setDescriptionError('');
         if(validateForm()) {
             listing.seller = user._id;
+            const endDateTime = new Date(endDate+'T'+endTime).toISOString();
+            listing.auctionEndDate = endDateTime;
             console.log(listing);
+            console.log(endDateTime);
             axios
             .post('http://localhost:8082/api/items', listing)
             .then( result => {
@@ -52,7 +67,8 @@ const CreateListing = (props) => {
                     startingBid: 0,
                     sold: false,
                     image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d',
-                    seller:''
+                    seller:'',
+                    auctionEndDate: ''
                 });
                 navigate('/');
             })
@@ -64,11 +80,19 @@ const CreateListing = (props) => {
 
     const validateForm = () => {
         if(listing.title.length < 5){
-            alert("Title must be at least 5 characters long");
+            setTitleError("Title must be at least 5 characters long");
             return false;
         }
-        if(listing.description.length < 10){
-            alert("Description must be at least 10 characters long");
+        if(endDate === undefined || endTime === undefined){
+            setTimeError("Must pick a time for listing to end");
+            return false;
+        }
+        if(new Date(endDate+'T'+endTime) < new Date()){
+            setTimeError("Must pick a time in the future");
+            return false;
+        }
+        if(listing.description.length < 20){
+            setDescriptionError("Description must be at least 20 characters long");
             return false;
         }
         return true;
@@ -88,11 +112,15 @@ const CreateListing = (props) => {
             const formData = new FormData();
             formData.append('file', selectedFile);
             formData.append('upload_preset', uploadPreset);
-
+            const config = {
+                onUploadProgress: (event) => {
+                    const progress = Math.round(event.loaded * 100 / event.total);
+                    setUploadProgress(progress);
+                }
+            }
             axios
-                .post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData)
+                .post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData, config)
                 .then((response) => {
-                    console.log(response.data.secure_url);
                     setFileUrl(response.data.secure_url);
                     listing.image = response.data.secure_url;
                 })
@@ -116,14 +144,14 @@ const CreateListing = (props) => {
         }
     }
 
-    console.log(process.env.REACT_APP_CLOUDINARY_API_SECRET)
-    console.log(user);
-    
+    console.log(uploadProgress);
+
     return (
         <div className="container">
             <form onSubmit={onSubmit}>
                 <div className="mb-3">
                     <label className="form-label">Title</label>
+                    <div style={{textAlign:''}} className='text-danger'>{titleError && <p>{titleError}</p>}</div>
                     <input 
                         type="text" 
                         className="form-control" 
@@ -142,7 +170,17 @@ const CreateListing = (props) => {
                         </div>
                     </div>
 
+                    <div className="form-group row">
+                        <label class="col-sm-2 col-form-label">Listing Ends</label>
+                        <div class="col-sm-10">
+                            <div style={{textAlign:''}} className='text-danger'>{timeError && <p>{timeError}</p>}</div>
+                            <input type='date' style={{marginRight:'5px'}} onChange={event => setEndDate(event.target.value)}/>
+                            <input type='time' onChange={event => setEndTime(event.target.value)}/>
+                        </div>
+                    </div>
+
                     <label>Description</label>
+                    <div style={{textAlign:''}} className='text-danger'>{descriptionError && <p>{descriptionError}</p>}</div>
                     <textarea 
                         className="form-control"
                         rows="5" 
@@ -150,6 +188,7 @@ const CreateListing = (props) => {
                         name='description'
                         value={listing.description}
                         onChange={onChange}
+                        placeholder='Describe your item in detail...'
                     />
                     <label>Desired Price or Value</label>
                     <div className="input-group">
@@ -157,7 +196,7 @@ const CreateListing = (props) => {
                             <span className="input-group-text">$</span>
                         </div>
                         <input
-                            type="text"
+                            type="number"
                             className="form-control"
                             id="price"
                             name='price'
@@ -171,7 +210,7 @@ const CreateListing = (props) => {
                             <span className="input-group-text">$</span>
                         </div>
                         <input
-                            type="text"
+                            type="number"
                             className="form-control"
                             id="startingBid"
                             name='startingBid'
@@ -185,13 +224,14 @@ const CreateListing = (props) => {
                             type='file'
                             onChange={handleFileChange}
                         />
-                        <button onClick={handleUpload}>Upload</button>
+                        <button onClick={handleUpload} style={{marginRight:'1%'}}>Upload</button>
+                        {uploadProgress != 0 && <p>Upload Progress: {uploadProgress}%</p>}
                     </div>
                     {fileUrl && (
                         <div>
                             {/* <p>File URL:</p>
                             <Image cloudName="YOUR_CLOUD_NAME" publicId={fileUrl} /> */}
-                            <div className="card" style={{width: '18rem'}}>
+                            <div className="card" style={{width: '18rem',margin:'1%'}}>
                                 <img className="card-img-top"  src={fileUrl} alt="" />
                                 <div className="card-body">
                                     <button className='btn-warning' onClick={handleRemoveImage}>Remove</button>

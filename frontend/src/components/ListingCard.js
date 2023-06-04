@@ -18,12 +18,26 @@ const ListingCard = (props) => {
         });
     });
 
+    const convertTime = (diff) => {
+        var _second = 1000;
+        var _minute = _second * 60;
+        var _hour = _minute * 60;
+        var _day = _hour * 24;
+        var days = Math.floor(diff / _day);
+        var hours = Math.floor((diff % _day) / _hour);
+        var minutes = Math.floor((diff % _hour) / _minute);
+        var seconds = Math.floor((diff % _minute) / _second);
+        var timeString = days+' days '+hours+' hours '+minutes+' minutes '+seconds+' seconds';
+        return timeString;
+    }
+
     return(
         <div className="card" style={{width: '18rem', margin:'2%'}}>
             <img className="card-img-top"  src={listing.image} alt="" />
             <div className="card-body">
                 <h5 className="card-title">{listing.title}</h5>
                 <h6 className="text-center text-muted">Seller: {sellerName}</h6>
+                <h6 className="text-center text-muted">Ending: {convertTime(new Date(listing.auctionEndDate) - new Date().getTime())}</h6>
                 <div style={{display:'flex' , justifyContent: 'space-between'}}>
                     <div>
                         <h6 className="text-center text-muted">Current Bid</h6>

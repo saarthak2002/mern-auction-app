@@ -27,6 +27,10 @@ const ItemSchema = new mongoose.Schema({
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
+    },
+    auctionEndDate: {
+        type: Date,
+        required: true
     }
 });
 
