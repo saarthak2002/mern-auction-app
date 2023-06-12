@@ -21,4 +21,13 @@ router.post('/', (request, result) => {
         .catch(error => result.status(400).json({ error: 'Unable to add this item' }));
 });
 
+router.post('/bid/:id', (request, result) => {
+    const filter = { _id: request.params.id };
+    const update = { price: request.body.price };
+
+    Item.findOneAndUpdate(filter, update)
+        .then(item => result.json({message: 'Item updated successfully'}))
+        .catch(error => result.status(400).json({ error: 'Unable to update this item' }));
+});
+
 module.exports = router;

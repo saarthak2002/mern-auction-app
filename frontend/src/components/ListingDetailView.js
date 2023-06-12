@@ -50,8 +50,90 @@ const ListingDetailView = (props) => {
         return 'Ends on ' + days[date.getDay()] + ', ' + months[date.getMonth()] + ' ' +date.getDate() + ' ';
     }
 
+    const [bid, setBid] = useState({
+        item:'',
+        buyer:'',
+        amount:0,
+        timestamp:Date.now()
+    });
+
+    const [newBid, setNewBid] = useState(0);
+
+    const bidButtonHandler = () => {
+        console.log('bid button clicked');
+        console.log('user')
+        console.log(user._id);
+        console.log('listing')
+        console.log(id);
+    }
+
+    const onBid = (event) => {
+        console.log('bid placed');
+        console.log(newBid);
+
+        event.preventDefault();
+        bid.item = id;
+        bid.buyer = user._id;
+        bid.amount = newBid;
+        bid.timestamp = Date.now();
+        console.log(bid);
+
+        axios
+            .post('http://localhost:8082/api/bids', bid)
+            .then(result => {
+
+                axios
+                    .post(`http://localhost:8082/api/items/bid/${id}`, {price:newBid})
+                    .then(result => {
+                        setBid({
+                            item:'',
+                            buyer:'',
+                            amount:0,
+                            timestamp:Date.now()
+                        })
+                    })
+                    .catch(error => console.log('error'));
+
+            })
+            .catch(error => console.log('error'));
+    }
+
     return(
         <div>
+            {/* Bid Modal */}
+            <div id="myModal" className="modal fade" role="dialog">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h4 className="modal-title">Bid on {listing.title}</h4>
+                            <button type="button" className="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <form onSubmit={onBid}>
+                                <label>Bid amount:</label>
+                                <div className="input-group">
+                                    <div className="input-group-prepend">
+                                        <span className="input-group-text">$</span>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        onChange={(e) => setNewBid(e.target.value)}
+                                    />
+                                </div>
+                                <div class="text-center">
+                                    <button type='submit' className='btn btn-primary' style={{margin: '5px'}}>Place Bid</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* Bid Modal */}
+
             <div className='text-muted' style={{marginLeft:'5%'}}>
                 <Link to='/'>
                     <BackIcon 
@@ -62,49 +144,49 @@ const ListingDetailView = (props) => {
                 </Link>
             </div>
        
-        <div style={{margin:'5%', marginTop:'0'}}>
-            <div className="row">
-                <div className="col-md-6 d-flex justify-content-center">
-                    <div id="carouseIndicators" class="carousel slide" data-ride="carousel">
-                        <ol class="carousel-indicators">
-                            {imageArray.map((image, index) => (
-                                <li data-target="#carouseIndicators" data-slide-to={index} className={index === 0 ? 'active' : ''}></li>
-                            ))}
-                         </ol>
+            <div style={{margin:'5%', marginTop:'0'}}>
+                <div className="row">
+                    <div className="col-md-6 d-flex justify-content-center">
+                        <div id="carouseIndicators" className="carousel slide" data-ride="carousel">
+                            <ol className="carousel-indicators">
+                                {imageArray.map((image, index) => (
+                                    <li data-target="#carouseIndicators" data-slide-to={index} className={index === 0 ? 'active' : ''}></li>
+                                ))}
+                            </ol>
 
-                        <div class="carousel-inner">
-                            {imageArray.map((image, index) => (
-                                <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-                                    <img class="d-block w-100" src={image} alt={`Slide ${index + 1}`} />
-                                </div>
-                            ))}
+                            <div className="carousel-inner">
+                                {imageArray.map((image, index) => (
+                                    <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
+                                        <img className="d-block w-100" src={image} alt={`Slide ${index + 1}`} />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <a className="carousel-control-prev" href="#carouseIndicators" role="button" data-slide="prev">
+                                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span className="sr-only">Previous</span>
+                            </a>
+                            <a className="carousel-control-next" href="#carouseIndicators" role="button" data-slide="next">
+                                <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span className="sr-only">Next</span>
+                            </a>
+                        </div>              
+                    </div>
+                    <div className="col-md-6">
+                        <div style={{paddingLeft:'5%'}}>
+                            <h1 className='display-1'>{listing.title}</h1>
+                            <p className='lead'>{listing.description}</p>
+                            <h2 className="">
+                                {getEndString()}
+                            </h2>
+                            <h3>{convertTime(new Date(listing.auctionEndDate) - new Date().getTime())} left</h3>
+                            {isLoggedIn &&
+                                <button className='btn btn-primary' onClick={bidButtonHandler} data-toggle="modal" data-target="#myModal">Bid</button>
+                            }
                         </div>
-
-                        <a className="carousel-control-prev" href="#carouseIndicators" role="button" data-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="sr-only">Previous</span>
-                        </a>
-                        <a className="carousel-control-next" href="#carouseIndicators" role="button" data-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="sr-only">Next</span>
-                        </a>
-                    </div>              
-                </div>
-                <div className="col-md-6">
-                    <div style={{paddingLeft:'5%'}}>
-                        <h1 className='display-1'>{listing.title}</h1>
-                        <p class='lead'>{listing.description}</p>
-                        <h2 class="">
-                            {getEndString()}
-                        </h2>
-                        <h3>{convertTime(new Date(listing.auctionEndDate) - new Date().getTime())} left</h3>
-                        {isLoggedIn &&
-                            <a className='btn btn-primary'>Bid</a>
-                        }
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     );
 }
