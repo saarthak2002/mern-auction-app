@@ -1,22 +1,35 @@
 import React, { useState,useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ReactComponent as BackIcon } from '../assets/back.svg';
 
 const ListingDetailView = (props) => {
 
+    const navigate = useNavigate();
     const { id } = useParams();
-
     const [listing, setListing] = useState({});
+    const [bids, setBids] = useState([{}]);
     const [imageArray, setImageArray] = useState([]);
+    const [formattedBid, setFormattedBid] = useState('');
 
     useEffect(() => {
+
         axios.get(`http://localhost:8082/api/items/${id}`)
             .then(result => { 
                 setListing(result.data);
                 setImageArray(result.data.image); 
+                setFormattedBid(result.data.price.toLocaleString())
             })
             .catch(error => { console.log('error reading from API'); });
+        
+        const getBids = async () => {
+            await axios.get(`http://localhost:8082/api/bids/${id}`)
+                       .then(result => { setBids(result.data); })
+                       .catch(error => { console.log('error reading from API'); });
+        }
+        
+        getBids();
+
     }, [id]); 
 
     const [user, setUser] = useState();
@@ -91,12 +104,15 @@ const ListingDetailView = (props) => {
                             amount:0,
                             timestamp:Date.now()
                         })
+                        window.location.reload(true);
                     })
                     .catch(error => console.log('error'));
 
             })
             .catch(error => console.log('error'));
     }
+
+    console.log(bids);
 
     return(
         <div>
@@ -176,6 +192,7 @@ const ListingDetailView = (props) => {
                         <div style={{paddingLeft:'5%'}}>
                             <h1 className='display-1'>{listing.title}</h1>
                             <p className='lead'>{listing.description}</p>
+                            <h2>$ {formattedBid}</h2>
                             <h2 className="">
                                 {getEndString()}
                             </h2>
@@ -186,6 +203,32 @@ const ListingDetailView = (props) => {
                         </div>
                     </div>
                 </div>
+            </div>
+            <div>
+                <h1 className='diplay-2' style={{textAlign:'center'}}>Lot Bid History</h1>
+                <div className='container'>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th scope="col">Bid</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Bid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {bids.map( (bid, index) => (
+                            <tr>
+                                <td>{index+1}</td>
+                                {/* bid.timestamp.substring(0,10) + ' at ' + bid.timestamp.substring(11,19) */}
+                                <td>{bid.timestamp}</td>
+                                <td>$ {bid.amount}</td>
+                            </tr>
+                        ) )}
+                        
+                    </tbody>
+                </table>
+                </div>
+                
             </div>
         </div>
     );
