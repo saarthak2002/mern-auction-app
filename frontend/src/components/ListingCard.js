@@ -34,7 +34,7 @@ const ListingCard = (props) => {
 
     return(
         <div className="card" style={{width: '18rem', margin:'2%'}}>
-            <img className="card-img-top"  src={listing.image[0]} alt="" />
+            <img className="card-img-top"  src={listing.image.length > 0 ? listing.image[0] : 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d'} alt="" />
             <div className="card-body">
                 <h5 className="card-title">{listing.title}</h5>
                 <h6 className="text-center text-muted">Seller: {sellerName}</h6>

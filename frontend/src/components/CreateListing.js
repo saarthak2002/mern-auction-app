@@ -95,6 +95,10 @@ const CreateListing = (props) => {
             setDescriptionError("Description must be at least 20 characters long");
             return false;
         }
+        if(listing.image.length === 0){
+            alert("Must upload at least one image");
+            return false;
+        }
         return true;
     }
 
@@ -113,10 +117,6 @@ const CreateListing = (props) => {
             
             console.log('sf');
             console.log(selectedFiles);
-            // for(let i=0;i<selectedFiles.length;i++){
-            //     formData.append('files', selectedFiles[i]);
-            // }
-            // formData.append('upload_preset', uploadPreset);
 
             for(let i=0;i<selectedFiles.length;i++){
                 const formData = new FormData();

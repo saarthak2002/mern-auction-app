@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {useState} from 'react'
 import axios from 'axios';
+import logo from '../assets/auc-hammer.png';
 
 
 const Register = (props) => {
@@ -81,6 +82,7 @@ const Register = (props) => {
         <>
             <div className="row align-items-center" style={{height: '100vh'}}>
                 <div className="mx-auto col-10 col-md-8 col-lg-4">
+                    <img src={logo} className="rounded mx-auto d-block" alt='an auction hammer' style={{width:'30%'}}></img>
                     <h1 className="text-center mb-4">Register</h1>
                     <div style={{textAlign:'center'}} className='text-danger'>{error && <p>{error}</p>}</div>
                     <form onSubmit={onSubmit}>
